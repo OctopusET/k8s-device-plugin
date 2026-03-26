@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tt-device-plugin
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: tt-device-plugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tt-device-plugin
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tt-device-plugin
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+      containers:
+        - name: tt-device-plugin
+          image: ghcr.io/OctopusET/k8s-device-plugin:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+          volumeMounts:
+            - name: device-plugins
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: dev-tenstorrent
+              mountPath: /dev/tenstorrent
+              readOnly: true
+            - name: hugepages
+              mountPath: /dev/hugepages-1G
+              readOnly: true
+      volumes:
+        - name: device-plugins
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+            type: Directory
+        - name: sys
+          hostPath:
+            path: /sys
+            type: Directory
+        - name: dev-tenstorrent
+          hostPath:
+            path: /dev/tenstorrent
+            type: Directory
+        - name: hugepages
+          hostPath:
+            path: /dev/hugepages-1G
+            type: DirectoryOrCreate
