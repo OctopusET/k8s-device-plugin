@@ -1,0 +1,25 @@
+image:
+  repository: ghcr.io/OctopusET/k8s-device-plugin
+  tag: ""  # defaults to appVersion
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 64Mi
+  requests:
+    cpu: 50m
+    memory: 32Mi
+
+tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+
+nodeSelector: {}
+
+affinity: {}
+
+updateStrategy:
+  type: RollingUpdate

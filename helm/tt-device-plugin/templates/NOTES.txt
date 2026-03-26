@@ -1,0 +1,10 @@
+{{ include "tt-device-plugin.fullname" . }} deployed in namespace '{{ .Release.Namespace }}'.
+
+Tenstorrent devices will be advertised as:
+  - tenstorrent.com/blackhole
+  - tenstorrent.com/n150
+  - tenstorrent.com/n300
+  - tenstorrent.com/grayskull
+
+Verify with:
+  kubectl get nodes -o json | jq '.items[].status.allocatable | with_entries(select(.key | startswith("tenstorrent")))'

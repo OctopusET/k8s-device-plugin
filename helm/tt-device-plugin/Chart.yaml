@@ -1,0 +1,16 @@
+apiVersion: v2
+name: tt-device-plugin
+description: Kubernetes device plugin for Tenstorrent AI accelerators
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">= 1.18.0-0"
+home: https://github.com/OctopusET/k8s-device-plugin
+sources:
+  - https://github.com/OctopusET/k8s-device-plugin
+keywords:
+  - kubernetes
+  - tenstorrent
+  - ai
+  - accelerator
+  - device-plugin
