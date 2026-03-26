@@ -8,9 +8,9 @@ With [tt-kmd][tt-kmd] installed and this plugin deployed, you will be able to re
 
 | Resource | Cards |
 |-|-|
-| `tenstorrent.com/blackhole` | p100a, p150a/b/c, p300a/b/c |
-| `tenstorrent.com/n150` | N150 |
-| `tenstorrent.com/n300` | N300, N300L, N300S |
+| `tenstorrent.com/blackhole` | p100a, p150a, p150b, p150c, p300a, p300b, p300c |
+| `tenstorrent.com/n150` | n150 |
+| `tenstorrent.com/n300` | n300, n300l, n300s |
 | `tenstorrent.com/grayskull` | e75, e150 |
 
 ## Prerequisites
