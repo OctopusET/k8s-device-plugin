@@ -22,6 +22,7 @@ import (
 )
 
 const (
+	// TODO: decide on resource name with TT (device, chip, accelerator, npu, ...)
 	driverName = "tenstorrent.com"
 	socketPath = "/var/lib/kubelet/plugins/tenstorrent.com/plugin.sock"
 )
