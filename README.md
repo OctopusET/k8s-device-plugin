@@ -15,6 +15,7 @@ With [tt-kmd][tt-kmd] installed and this plugin deployed, you will be able to re
 
 ## Prerequisites
 
+* Kubernetes >= 1.18
 * [tt-kmd][tt-kmd] kernel module loaded on each node
 * `/dev/tenstorrent/N` device nodes present
 * 1G hugepages (`/dev/hugepages-1G`) recommended
