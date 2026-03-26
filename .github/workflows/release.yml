@@ -55,5 +55,6 @@ jobs:
 
       - name: Package and push Helm chart
         run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           helm package helm/tt-device-plugin --version ${GITHUB_REF_NAME#v} --app-version ${GITHUB_REF_NAME#v}
-          helm push tt-device-plugin-${GITHUB_REF_NAME#v}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          helm push tt-device-plugin-${GITHUB_REF_NAME#v}.tgz oci://${{ env.REGISTRY }}/${OWNER}/charts
