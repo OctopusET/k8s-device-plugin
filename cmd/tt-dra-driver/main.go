@@ -27,6 +27,39 @@ const (
 	socketPath = "/var/lib/kubelet/plugins/tenstorrent.com/plugin.sock"
 )
 
+// TODO: verify DRAM sizes with TT, sysfs does not expose this
+var dramGB = map[string]int64{
+	"p100a": 24,
+	"p150a": 32,
+	"p150b": 32,
+	"p150c": 32,
+	"p300a": 48,
+	"p300b": 48,
+	"p300c": 48,
+	"n150":  12,
+	"n300":  24,
+	"n300l": 24,
+	"n300s": 24,
+	"e75":   1,
+	"e150":  1,
+}
+
+var archMap = map[string]string{
+	"p100a": "blackhole",
+	"p150a": "blackhole",
+	"p150b": "blackhole",
+	"p150c": "blackhole",
+	"p300a": "blackhole",
+	"p300b": "blackhole",
+	"p300c": "blackhole",
+	"n150":  "wormhole",
+	"n300":  "wormhole",
+	"n300l": "wormhole",
+	"n300s": "wormhole",
+	"e75":   "grayskull",
+	"e150":  "grayskull",
+}
+
 var version = "dev"
 
 type draDriver struct {
@@ -56,46 +89,48 @@ func (d *draDriver) NodeUnprepareResources(_ context.Context, req *drapb.NodeUnp
 	return resp, nil
 }
 
-func publishResourceSlices(ctx context.Context, clientset *kubernetes.Clientset, nodeName string) error {
+func publishResourceSlice(ctx context.Context, clientset *kubernetes.Clientset, nodeName string) error {
 	grouped, err := device.Discover()
 	if err != nil {
 		return fmt.Errorf("discover: %w", err)
 	}
 
-	for class, devs := range grouped {
-		poolName := fmt.Sprintf("%s-%s", nodeName, class)
+	poolName := nodeName
+	var devices []resourceapi.Device
 
-		var devices []resourceapi.Device
+	for _, devs := range grouped {
 		for _, dev := range devs {
+			arch := archMap[dev.CardType]
+			dram := dramGB[dev.CardType]
+
 			devices = append(devices, resourceapi.Device{
 				Name: dev.ID,
 				Attributes: map[resourceapi.QualifiedName]resourceapi.DeviceAttribute{
-					"architecture": {StringValue: &class},
+					"architecture": {StringValue: &arch},
 					"cardType":     {StringValue: &dev.CardType},
+					"dramGB":       {IntValue: &dram},
 				},
 			})
 		}
-
-		slice := &resourceapi.ResourceSlice{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: poolName,
-			},
-			Spec: resourceapi.ResourceSliceSpec{
-				Driver:   driverName,
-				Pool:     resourceapi.ResourcePool{Name: poolName},
-				NodeName: &nodeName,
-				Devices:  devices,
-			},
-		}
-
-		_, err := clientset.ResourceV1beta2().ResourceSlices().Create(ctx, slice, metav1.CreateOptions{})
-		if err != nil {
-			klog.Warningf("Failed to create ResourceSlice %s: %v", poolName, err)
-			continue
-		}
-		klog.Infof("Published ResourceSlice %s with %d devices", poolName, len(devices))
 	}
 
+	slice := &resourceapi.ResourceSlice{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: poolName,
+		},
+		Spec: resourceapi.ResourceSliceSpec{
+			Driver:   driverName,
+			Pool:     resourceapi.ResourcePool{Name: poolName},
+			NodeName: &nodeName,
+			Devices:  devices,
+		},
+	}
+
+	_, err = clientset.ResourceV1beta2().ResourceSlices().Create(ctx, slice, metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("create ResourceSlice %s: %w", poolName, err)
+	}
+	klog.Infof("Published ResourceSlice %s with %d devices", poolName, len(devices))
 	return nil
 }
 
@@ -120,8 +155,8 @@ func main() {
 		klog.Fatalf("Failed to create clientset: %v", err)
 	}
 
-	if err := publishResourceSlices(ctx, clientset, nodeName); err != nil {
-		klog.Fatalf("Failed to publish resource slices: %v", err)
+	if err := publishResourceSlice(ctx, clientset, nodeName); err != nil {
+		klog.Fatalf("Failed to publish resource slice: %v", err)
 	}
 
 	dir := filepath.Dir(socketPath)
