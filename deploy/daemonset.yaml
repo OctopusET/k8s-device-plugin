@@ -22,7 +22,7 @@ spec:
           operator: Exists
       containers:
         - name: tt-device-plugin
-          image: ghcr.io/OctopusET/k8s-device-plugin:latest
+          image: ghcr.io/octopuset/k8s-device-plugin:latest
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

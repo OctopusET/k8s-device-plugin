@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/OctopusET/k8s-device-plugin
+  repository: ghcr.io/octopuset/k8s-device-plugin
   tag: ""  # defaults to appVersion
   pullPolicy: IfNotPresent
 
